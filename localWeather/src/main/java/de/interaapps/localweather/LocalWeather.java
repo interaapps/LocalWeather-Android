@@ -80,6 +80,7 @@ public abstract class LocalWeather {
             @Override
             public void onSuccess(@NotNull Location location) {
                 LocalWeather.this.location = location;
+                onLocationSuccess();
             }
 
             @Override
@@ -143,6 +144,7 @@ public abstract class LocalWeather {
             @Override
             public void onSuccess(CurrentWeather currentWeather) {
                 LocalWeather.this.currentWeather = currentWeather;
+                onWeatherSuccess();
             }
 
             @Override
@@ -159,6 +161,7 @@ public abstract class LocalWeather {
             @Override
             public void onSuccess(ThreeHourForecast threeHourForecast) {
                 LocalWeather.this.threeHourForecast = threeHourForecast;
+                onWeatherSuccess();
             }
 
             @Override
@@ -186,4 +189,6 @@ public abstract class LocalWeather {
 
     abstract void onLocationFailure(LocationFailedEnum locationFailedEnum);
     abstract void onWeatherFailure(Throwable throwable);
+    abstract void onLocationSuccess();
+    abstract void onWeatherSuccess();
 }
