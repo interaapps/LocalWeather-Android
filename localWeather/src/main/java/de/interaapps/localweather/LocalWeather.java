@@ -172,16 +172,16 @@ public abstract class LocalWeather {
         this.currentWeather = currentWeather;
     }
 
-    public CurrentWeather getWeather() {
-        return currentWeather;
+    public Weather getWeather() {
+        return new Weather(currentWeather);
     }
 
     public void setForecastWeather(ThreeHourForecast threeHourForecast) {
         this.threeHourForecast = threeHourForecast;
     }
 
-    public ThreeHourForecast getForecastWeather() {
-        return threeHourForecast;
+    public ForecastWeather getForecastWeather() {
+        return new ForecastWeather(threeHourForecast);
     }
 
     abstract void onLocationFailure(LocationFailedEnum locationFailedEnum);

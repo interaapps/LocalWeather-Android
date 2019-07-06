@@ -29,5 +29,7 @@ public class MainActivity extends AppCompatActivity {
         };
         localWeather.setLocation();
         localWeather.listenWeather();
+        Weather weather = localWeather.getWeather();
+        weather.getMaxTemp();
     }
 }
