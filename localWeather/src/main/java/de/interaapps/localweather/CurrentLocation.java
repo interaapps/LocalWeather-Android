@@ -116,6 +116,7 @@ public class CurrentLocation {
             ArrayList<String> permissions = new ArrayList<>();
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
             permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+            permissions.add(Manifest.permission.INTERNET);
 
             boolean permissionGranted = true;
             for (String permission : permissions) {

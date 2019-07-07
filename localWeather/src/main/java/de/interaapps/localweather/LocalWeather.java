@@ -17,7 +17,6 @@ public class LocalWeather {
 
     private Activity activity;
     private Location location;
-    private int timeout = 5000;
     private OpenWeatherMapHelper openWeatherMapHelper;
     private Units unit = Units.METRIC;
     private Lang language = Lang.ENGLISH;
@@ -114,12 +113,20 @@ public class LocalWeather {
         return unit;
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public void setRequestPermission(boolean shouldWeRequestPermission) {
+        this.shouldWeRequestPermission = shouldWeRequestPermission;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public boolean getRequestPermission() {
+        return shouldWeRequestPermission;
+    }
+
+    public void setRequestOptimization(boolean shouldWeRequestOptimization){
+        this.shouldWeRequestOptimization = shouldWeRequestOptimization;
+    }
+
+    public boolean getRequestOptimization(){
+        return shouldWeRequestOptimization;
     }
 
     public void setLocation() {

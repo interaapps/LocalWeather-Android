@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private Weather weather;
     private Button button;
     private AppCompatTextView textView;
+    private boolean weatherReady = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +53,13 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onWeatherSuccess() {
                         weather = localWeather.getWeather();
+                        weatherReady = true;
+                        textView.setText("Weather is ready");
                         Log.d("SUCCESS", "WEATHER");
                     }
                 });
 
         localWeather.setLocation();
-        localWeather.setLanguage(Lang.ENGLISH);
-        localWeather.setUnit(Units.METRIC);
 
         initialize();
         initializeLogic();
@@ -73,7 +74,8 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                textView.setText((int) localWeather.getLocation().getAltitude());
+                if (weatherReady)
+                    textView.setText(weather.getTemp() + "");
             }
         });
     }
