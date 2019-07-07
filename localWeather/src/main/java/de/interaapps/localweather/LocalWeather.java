@@ -9,17 +9,13 @@ import com.kwabenaberko.openweathermaplib.implementation.callbacks.ThreeHourFore
 import com.kwabenaberko.openweathermaplib.models.currentweather.CurrentWeather;
 import com.kwabenaberko.openweathermaplib.models.threehourforecast.ThreeHourForecast;
 
-import org.jetbrains.annotations.NotNull;
-
 import de.interaapps.localweather.utils.Lang;
 import de.interaapps.localweather.utils.LocationFailedEnum;
 import de.interaapps.localweather.utils.Units;
-import mumayank.com.airlocationlibrary.AirLocation;
 
-public abstract class LocalWeather {
+public class LocalWeather {
 
     private Activity activity;
-    private AirLocation airLocation;
     private Location location;
     private int timeout = 5000;
     private OpenWeatherMapHelper openWeatherMapHelper;
@@ -27,22 +23,71 @@ public abstract class LocalWeather {
     private Lang language = Lang.ENGLISH;
     private CurrentWeather currentWeather;
     private ThreeHourForecast threeHourForecast;
+    private CurrentLocation currentLocation;
+    private LocalWeather.Callbacks callbacks;
+    private boolean shouldWeRequestPermission = false;
+    private boolean shouldWeRequestOptimization = false;
 
-    public LocalWeather(Activity activity, String apiKey) {
+    public LocalWeather(Activity activity, String apiKey, LocalWeather.Callbacks callbacks) {
         this.activity = activity;
+        this.callbacks = callbacks;
         openWeatherMapHelper = new OpenWeatherMapHelper(apiKey);
     }
 
-    public LocalWeather(Activity activity, String apiKey, Units unit) {
+    public LocalWeather(Activity activity,
+                        String apiKey,
+                        boolean shouldWeRequestPermission,
+                        boolean shouldWeRequestOptimization,
+                        LocalWeather.Callbacks callbacks) {
+        this.activity = activity;
+        this.callbacks = callbacks;
+        this.shouldWeRequestPermission = shouldWeRequestPermission;
+        this.shouldWeRequestOptimization = shouldWeRequestOptimization;
+        openWeatherMapHelper = new OpenWeatherMapHelper(apiKey);
+    }
+
+    public LocalWeather(Activity activity, String apiKey, Units unit, LocalWeather.Callbacks callbacks) {
         this.activity = activity;
         this.unit = unit;
+        this.callbacks = callbacks;
         openWeatherMapHelper = new OpenWeatherMapHelper(apiKey);
     }
 
-    public LocalWeather(Activity activity, String apiKey, Units unit, Lang language) {
+    public LocalWeather(Activity activity,
+                        String apiKey,
+                        Units unit,
+                        boolean shouldWeRequestPermission,
+                        boolean shouldWeRequestOptimization,
+                        LocalWeather.Callbacks callbacks) {
+        this.activity = activity;
+        this.unit = unit;
+        this.callbacks = callbacks;
+        this.shouldWeRequestPermission = shouldWeRequestPermission;
+        this.shouldWeRequestOptimization = shouldWeRequestOptimization;
+        openWeatherMapHelper = new OpenWeatherMapHelper(apiKey);
+    }
+
+    public LocalWeather(Activity activity, String apiKey, Units unit, Lang language, LocalWeather.Callbacks callbacks) {
         this.activity = activity;
         this.unit = unit;
         this.language = language;
+        this.callbacks = callbacks;
+        openWeatherMapHelper = new OpenWeatherMapHelper(apiKey);
+    }
+
+    public LocalWeather(Activity activity,
+                        String apiKey,
+                        Units unit,
+                        Lang language,
+                        boolean shouldWeRequestPermission,
+                        boolean shouldWeRequestOptimization,
+                        LocalWeather.Callbacks callbacks) {
+        this.activity = activity;
+        this.unit = unit;
+        this.language = language;
+        this.callbacks = callbacks;
+        this.shouldWeRequestPermission = shouldWeRequestPermission;
+        this.shouldWeRequestOptimization = shouldWeRequestOptimization;
         openWeatherMapHelper = new OpenWeatherMapHelper(apiKey);
     }
 
@@ -53,6 +98,7 @@ public abstract class LocalWeather {
 
     public void setLanguage(Lang language) {
         this.language = language;
+        openWeatherMapHelper.setLang(language.getTag());
     }
 
     public Lang getLanguage() {
@@ -61,6 +107,7 @@ public abstract class LocalWeather {
 
     public void setUnit(Units unit) {
         this.unit = unit;
+        openWeatherMapHelper.setUnits(unit.getTitle());
     }
 
     public Units getUnit() {
@@ -76,31 +123,16 @@ public abstract class LocalWeather {
     }
 
     public void setLocation() {
-        airLocation = new AirLocation(activity, false, true, new AirLocation.Callbacks() {
+        currentLocation = new CurrentLocation(activity, shouldWeRequestPermission, shouldWeRequestOptimization, new CurrentLocation.Callbacks() {
             @Override
-            public void onSuccess(@NotNull Location location) {
+            public void onSuccess(Location location) {
                 LocalWeather.this.location = location;
-                onLocationSuccess();
+                callbacks.onLocationSuccess();
             }
 
             @Override
-            public void onFailed(@NotNull AirLocation.LocationFailedEnum locationFailedEnum) {
-                switch (locationFailedEnum) {
-                    case DeviceInFlightMode:
-                        onLocationFailure(LocationFailedEnum.DeviceInFlightMode);
-                        break;
-                    case LocationPermissionNotGranted:
-                        onLocationFailure(LocationFailedEnum.LocationPermissionNotGranted);
-                        break;
-
-                    case LocationOptimizationPermissionNotGranted:
-                        onLocationFailure(LocationFailedEnum.LocationOptimizationPermissionNotGranted);
-                        break;
-
-                    case HighPrecisionNA_TryAgainPreferablyWithInternet:
-                        onLocationFailure(LocationFailedEnum.HighPrecisionNA_TryAgainPreferablyWithInternet);
-                        break;
-                }
+            public void onFailed(LocationFailedEnum locationFailedEnum) {
+                callbacks.onLocationFailure(locationFailedEnum);
             }
         });
     }
@@ -137,6 +169,10 @@ public abstract class LocalWeather {
         return location.getAltitude();
     }
 
+    public CurrentLocation getLocationAccess() {
+        return currentLocation;
+    }
+
     public void listenWeather() {
         setSpecification();
 
@@ -144,12 +180,12 @@ public abstract class LocalWeather {
             @Override
             public void onSuccess(CurrentWeather currentWeather) {
                 LocalWeather.this.currentWeather = currentWeather;
-                onWeatherSuccess();
+                callbacks.onWeatherSuccess();
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                onWeatherFailure(throwable);
+                callbacks.onWeatherFailure(throwable);
             }
         });
     }
@@ -161,12 +197,12 @@ public abstract class LocalWeather {
             @Override
             public void onSuccess(ThreeHourForecast threeHourForecast) {
                 LocalWeather.this.threeHourForecast = threeHourForecast;
-                onWeatherSuccess();
+                callbacks.onWeatherSuccess();
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                onWeatherFailure(throwable);
+                callbacks.onWeatherFailure(throwable);
             }
         });
     }
@@ -187,8 +223,13 @@ public abstract class LocalWeather {
         return new ForecastWeather(threeHourForecast);
     }
 
-    abstract void onLocationFailure(LocationFailedEnum locationFailedEnum);
-    abstract void onWeatherFailure(Throwable throwable);
-    abstract void onLocationSuccess();
-    abstract void onWeatherSuccess();
+    interface Callbacks {
+        void onLocationFailure(LocationFailedEnum locationFailedEnum);
+
+        void onWeatherFailure(Throwable throwable);
+
+        void onLocationSuccess();
+
+        void onWeatherSuccess();
+    }
 }
