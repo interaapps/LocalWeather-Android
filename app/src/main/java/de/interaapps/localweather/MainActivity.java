@@ -12,9 +12,7 @@ import android.widget.Button;
 
 import org.jetbrains.annotations.Nullable;
 
-import de.interaapps.localweather.utils.Lang;
 import de.interaapps.localweather.utils.LocationFailedEnum;
-import de.interaapps.localweather.utils.Units;
 
 public class MainActivity extends AppCompatActivity {
 

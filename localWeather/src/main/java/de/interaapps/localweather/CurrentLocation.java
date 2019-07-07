@@ -33,6 +33,7 @@ import java.util.ArrayList;
 
 import de.interaapps.localweather.utils.LocationFailedEnum;
 import de.interaapps.localweather.utils.NetworkUtil;
+import locationprovider.davidserrano.com.LocationProvider;
 
 public class CurrentLocation {
 
@@ -44,6 +45,7 @@ public class CurrentLocation {
     private boolean shouldWeRequestPermission;
     private boolean shouldWeRequestOptimization;
     private Callbacks callbacks;
+    private LocationProvider locationProvider;
 
     CurrentLocation(Activity activity,
                     boolean shouldWeRequestPermission,
@@ -55,6 +57,7 @@ public class CurrentLocation {
         this.callbacks = callbacks;
         activityWeakReference = new WeakReference<>(activity);
 
+        getLocalLocation();
         init();
     }
 
@@ -92,6 +95,8 @@ public class CurrentLocation {
                 if (locationResult != null) {
                     callbacks.onSuccess(locationResult.getLastLocation());
                     fusedLocationClient.removeLocationUpdates(locationCallback);
+                } else {
+                    locationProvider.requestLocation();
                 }
                 return;
             }
@@ -100,8 +105,8 @@ public class CurrentLocation {
             public void onLocationAvailability(LocationAvailability locationAvailability) {
                 super.onLocationAvailability(locationAvailability);
                 if(!locationAvailability.isLocationAvailable()) {
-                    callbacks.onFailed(LocationFailedEnum.HighPrecisionNA_TryAgainPreferablyWithInternet);
                     fusedLocationClient.removeLocationUpdates(locationCallback);
+                    locationProvider.requestLocation();
                 }
             }
         };
@@ -145,7 +150,7 @@ public class CurrentLocation {
             return;
         }
 
-        LocationRequest locationRequest = LocationRequest.create();
+        final LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(2000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -177,8 +182,44 @@ public class CurrentLocation {
                         }
                     } catch (IntentSender.SendIntentException ignored) { }
                 }
+                locationProvider.requestLocation();
             }
         });
+    }
+
+    private void getLocalLocation() {
+        locationProvider = new LocationProvider.Builder()
+                .setContext(activityWeakReference.get())
+                .setListener(new LocationProvider.LocationCallback() {
+                    @Override
+                    public void onNewLocationAvailable(float lat, float lon) {
+                        callbacks.onSuccess(createLocation(lat, lon));
+                        locationProvider.onLocationPause();
+                    }
+
+                    @Override
+                    public void locationServicesNotEnabled() {
+                        callbacks.onFailed(LocationFailedEnum.LocationPermissionNotGranted);
+                        locationProvider.onLocationPause();
+                    }
+
+                    @Override
+                    public void updateLocationInBackground(float lat, float lon) { }
+
+                    @Override
+                    public void networkListenerInitialised() { }
+
+                    @Override
+                    public void locationRequestStopped() { }
+                })
+                .create();
+    }
+
+    private Location createLocation(float lat, float lon) {
+        Location location = new Location("dummyprovider");
+        location.setLatitude(lat);
+        location.setLongitude(lon);
+        return location;
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -218,7 +259,7 @@ public class CurrentLocation {
             } else {
                 LocationManager locationManager = (LocationManager) activityWeakReference.get().getSystemService(Context.LOCATION_SERVICE);
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    callbacks.onFailed(LocationFailedEnum.HighPrecisionNA_TryAgainPreferablyWithInternet);
+                    locationProvider.requestLocation();
                 } else {
                     callbacks.onFailed(LocationFailedEnum.LocationOptimizationPermissionNotGranted);
                 }
