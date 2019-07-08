@@ -129,7 +129,7 @@ public class LocalWeather {
         return shouldWeRequestOptimization;
     }
 
-    public void setLocation() {
+    public void fetchLocation() {
         currentLocation = new CurrentLocation(activity, shouldWeRequestPermission, shouldWeRequestOptimization, new CurrentLocation.Callbacks() {
             @Override
             public void onSuccess(Location location) {
@@ -180,7 +180,7 @@ public class LocalWeather {
         return currentLocation;
     }
 
-    public void listenWeather() {
+    public void fetchWeather() {
         setSpecification();
 
         openWeatherMapHelper.getCurrentWeatherByGeoCoordinates(location.getLatitude(), location.getLongitude(), new CurrentWeatherCallback() {
