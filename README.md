@@ -10,7 +10,7 @@ An Android library that lets you get the current weather at the user's location!
 + Connects automatically with OpenWeather to get users local weather
 
 ## Screenshot
-![Example Screenshot](https://github.com/interaapps/LocalWeather-Android/blob/master/app/src/main/res/drawable/example.png)
+![alt text](https://raw.githubusercontent.com/interaapps/LocalWeather-Android/master/app/src/main/res/drawable/example.png "Example Application")
 
 ## Usage
 
