@@ -73,20 +73,6 @@ public class MainActivity extends AppCompatActivity {
         weatherWindDeg = findViewById(R.id.weather_wind_deg);
         weatherSunrise = findViewById(R.id.weather_sunrise);
         weatherSunset = findViewById(R.id.weather_sunset);
-    }
-
-    private void initializeLogic() {
-        Timer timer = new Timer ();
-        TimerTask tenMinTask = new TimerTask () {
-            @Override
-            public void run () {
-                updateLocalWeather();
-            }
-        };
-        timer.schedule(tenMinTask, 0, 1000*60*10); //1000*60 = 1min *10 = 10min
-    }
-
-    private void updateLocalWeather() {
         localWeather = new LocalWeather(this,
                 "OpenWeatherApiKey",
                 true,
@@ -114,8 +100,18 @@ public class MainActivity extends AppCompatActivity {
                         updateWeatherDetails();
                     }
                 });
+    }
 
-        localWeather.fetchLocation();
+    private void initializeLogic() {
+        Timer timer = new Timer ();
+        TimerTask tenMinTask = new TimerTask () {
+            @Override
+            public void run () {
+                weatherReady = false;
+                localWeather.fetchLocation();
+            }
+        };
+        timer.schedule(tenMinTask, 0, 1000*60*10); //1000*60 = 1min *10 = 10min
     }
 
     private void updateWeatherDetails() {
