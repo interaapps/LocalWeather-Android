@@ -230,13 +230,13 @@ public class LocalWeather {
         return new ForecastWeather(threeHourForecast);
     }
 
-    interface Callbacks {
-        void onLocationFailure(LocationFailedEnum locationFailedEnum);
+    public interface Callbacks {
+        public void onLocationFailure(LocationFailedEnum locationFailedEnum);
 
-        void onWeatherFailure(Throwable throwable);
+        public void onWeatherFailure(Throwable throwable);
 
-        void onLocationSuccess();
+        public void onLocationSuccess();
 
-        void onWeatherSuccess();
+        public void onWeatherSuccess();
     }
 }
