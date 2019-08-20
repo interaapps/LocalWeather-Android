@@ -101,7 +101,7 @@ Add this line in your app build.gradle:
 ```gradle
 dependencies {
     ...
-    implementation 'com.github.interaapps:LocalWeather-Android:1.0'
+    implementation 'com.github.interaapps:LocalWeather-Android:1.1'
     ...
 }
 ```
