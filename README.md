@@ -15,55 +15,55 @@ An Android library that lets you get the current weather at the user's location!
 ## Usage
 
 + Declare localWeather in your activity
-+ Override `onActivityResult` and call `localWeather.getLocationAccess().onActivityResult` inside it
-+ Override `onRequestPermissionsResult` and call `localWeather.getLocationAccess().onRequestPermissionsResult` inside it
-+ Declare weather in your activity like this: `weather = localWeather.getWeather()`
++ Override `onActivityResult` and call `localWeather.onActivityResult` inside it if using current user location
++ Override `onRequestPermissionsResult` and call `localWeather.onRequestPermissionsResult` inside it if using current user location
 
 Example:
 ```java
 public class MainActivity extends AppCompatActivity {
 
     private LocalWeather localWeather;
-    private Weather weather;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        localWeather = new LocalWeather(this,
-                        "OpenWeatherApiKey",
-                        true,
-                        true,
-                        new LocalWeather.Callbacks() {
-                            @Override
-                            public void onLocationFailure(LocationFailedEnum locationFailedEnum) {
-                                Log.e("LOCATION-ERROR", locationFailedEnum.toString());
-                            }
+        localWeather = new LocalWeather(this, "OpenWeatherApiKey");
         
-                            @Override
-                            public void onWeatherFailure(Throwable throwable) {
-                                Log.e("WEATHER-ERROR", throwable.getMessage());
-                            }
+        localWeather.setUseCurrentLocation(true);
+        localWeather.setUpdateCurrentLocation(true);
+        localWeather.lang = Lang.ENGLISH;
+        localWeather.unit = Units.METRIC;
         
-                            @Override
-                            public void onLocationSuccess() {
-                                localWeather.fetchWeather();
-                            }
+        localWeather.setWeatherCallback(new LocalWeather.WeatherCallback(){
+            @Override
+            public void onSuccess(Weather weather) { 
+                updateWeatherDetails(weather);
+            }
+            
+            @Override
+            public void onFailure(Throwable exception) {
+                Log.e("Weather fetching", exception.getMessage());
+            }
+        });
         
-                            @Override
-                            public void onWeatherSuccess() {
-                                weather = localWeather.getWeather();
-                                updateWeatherDetails();
-                            }
-                        });
-        
-        localWeather.fetchLocation();
+        localWeather.fetchCurrentLocation(new LocalWeather.CurrentLocationCallback(){
+            @Override
+            public void onSuccess(Location location) {
+                localWeather.fetchCurrentWeatherByLocation(location);
+            }
+            
+            @Override
+            public void onFailure(LocationFailedEnum failed) {
+                Log.e("Location fetching", failed.toString());
+            }
+        });
     }
     
-    private void updateWeatherDetails() {
-        String unit = (localWeather.getUnit() == Units.METRIC) ? "°C" : "°F" ;
-        exampleTextview.setText(((int) weather.getTemp()) + unit); //Output: Temp with desired unit
+    private void updateWeatherDetails(Weather weather) {
+        String unit = (localWeather.unit == Units.METRIC) ? "°C" : "°F" ;
+        exampleTextview.setText(((int) weather.getTemperature()) + unit); //Output: Temp with desired unit
         
         //do whatever you want
     }
@@ -71,13 +71,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        localWeather.getLocationAccess().onActivityResult(requestCode, resultCode, data);
+        localWeather.onActivityResult(requestCode, resultCode, data);
     }
     
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        localWeather.getLocationAccess().onRequestPermissionsResult(requestCode, permissions, grantResults);
+        localWeather.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
 ```
@@ -101,7 +101,7 @@ Add this line in your app build.gradle:
 ```gradle
 dependencies {
     ...
-    implementation 'com.github.interaapps:LocalWeather-Android:1.1'
+    implementation 'com.github.interaapps:LocalWeather-Android:2.0'
     ...
 }
 ```
