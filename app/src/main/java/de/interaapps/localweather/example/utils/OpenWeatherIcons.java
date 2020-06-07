@@ -1,4 +1,4 @@
-package de.interaapps.example.utils;
+package de.interaapps.localweather.example.utils;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -11,7 +11,7 @@ import androidx.core.content.ContextCompat;
 
 import java.util.Locale;
 
-import de.interaapps.example.R;
+import de.interaapps.localweather.example.R;
 
 public class OpenWeatherIcons {
 

@@ -1,4 +1,4 @@
-package de.interaapps.example;
+package de.interaapps.localweather.example;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -15,7 +15,7 @@ import java.util.Calendar;
 
 import de.interaapps.localweather.utils.Lang;
 import de.interaapps.localweather.utils.LocationFailedEnum;
-import de.interaapps.example.utils.OpenWeatherIcons;
+import de.interaapps.localweather.example.utils.OpenWeatherIcons;
 import de.interaapps.localweather.utils.Units;
 import de.interaapps.localweather.LocalWeather;
 import de.interaapps.localweather.Weather;
