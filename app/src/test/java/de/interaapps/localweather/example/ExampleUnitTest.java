@@ -1,4 +1,4 @@
-package de.interaapps.localweather;
+package de.interaapps.localweather.example;
 
 import org.junit.Test;
 

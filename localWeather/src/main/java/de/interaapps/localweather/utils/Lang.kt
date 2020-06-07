@@ -1,8 +1,7 @@
-package de.interaapps.localweather.utils;
+package de.interaapps.localweather.utils
 
-import org.jetbrains.annotations.Contract;
 
-public enum Lang {
+enum class Lang(val tag: String) {
     ARABIC("ar"),
     BULGARIAN("bg"),
     CATALAN("ca"),
@@ -36,15 +35,4 @@ public enum Lang {
     VIETNAMESE("vi"),
     CHINESE_SIMPLIFIED("zh_cn"),
     CHINESE_TRADITIONAL("zh_tw");
-
-
-    private String tag;
-    Lang(String tag) {
-        this.tag = tag;
-    }
-
-    @Contract(pure = true)
-    public String getTag() {
-        return tag;
-    }
 }

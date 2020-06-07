@@ -1,23 +1,24 @@
-package de.interaapps.localweather.utils;
+package de.interaapps.localweather.example.utils;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.content.ContextCompat;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.Locale;
 
-import de.interaapps.localweather.R;
+import de.interaapps.localweather.example.R;
 
 public class OpenWeatherIcons {
 
     private Context context;
     private String weatherIcon;
 
-    public OpenWeatherIcons(Context context, String weatherIcon, @NotNull AppCompatImageView imageView)
+    public OpenWeatherIcons(Context context, String weatherIcon, AppCompatImageView imageView)
     {
         this.context = context;
         this.weatherIcon = weatherIcon;
@@ -27,10 +28,16 @@ public class OpenWeatherIcons {
 
     private Drawable getImage() {
 
-        switch (weatherIcon)
+        switch (weatherIcon.toLowerCase(Locale.getDefault()))
         {
+            case "01n":
+                return ContextCompat.getDrawable(context, R.drawable.weather01n);
+
             case "01d":
                 return ContextCompat.getDrawable(context, R.drawable.weather01d);
+
+            case "02n":
+                return ContextCompat.getDrawable(context, R.drawable.weather02n);
 
             case "02d":
                 return ContextCompat.getDrawable(context, R.drawable.weather02d);
@@ -63,6 +70,7 @@ public class OpenWeatherIcons {
                 return ContextCompat.getDrawable(context, R.drawable.weather50d);
 
             default:
+                Log.e("Drawable TAG", weatherIcon);
                 return new ColorDrawable(Color.TRANSPARENT) {
                 };
         }
