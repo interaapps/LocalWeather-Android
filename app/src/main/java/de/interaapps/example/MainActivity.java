@@ -1,31 +1,28 @@
-package de.interaapps.localweather;
+package de.interaapps.example;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.os.ConfigurationCompat;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
 
+import de.interaapps.localweather.utils.Lang;
 import de.interaapps.localweather.utils.LocationFailedEnum;
-import de.interaapps.localweather.utils.OpenWeatherIcons;
+import de.interaapps.example.utils.OpenWeatherIcons;
 import de.interaapps.localweather.utils.Units;
+import de.interaapps.localweather.LocalWeather;
+import de.interaapps.localweather.Weather;
 
 public class MainActivity extends AppCompatActivity {
 
     private LocalWeather localWeather;
-    private Weather weather;
-    private boolean weatherReady = false;
     private AppCompatImageView weatherImage;
     private AppCompatTextView dayInfo;
     private AppCompatTextView weatherTemp;
@@ -73,75 +70,66 @@ public class MainActivity extends AppCompatActivity {
         weatherWindDeg = findViewById(R.id.weather_wind_deg);
         weatherSunrise = findViewById(R.id.weather_sunrise);
         weatherSunset = findViewById(R.id.weather_sunset);
-        localWeather = new LocalWeather(this,
-                "OpenWeatherApiKey",
-                true,
-                true,
-                new LocalWeather.Callbacks() {
-                    @Override
-                    public void onLocationFailure(LocationFailedEnum locationFailedEnum) {
-                        Log.e("LOCATION-ERROR", locationFailedEnum.toString());
-                    }
-
-                    @Override
-                    public void onWeatherFailure(Throwable throwable) {
-                        Log.e("WEATHER-ERROR", throwable.getMessage());
-                    }
-
-                    @Override
-                    public void onLocationSuccess() {
-                        localWeather.fetchWeather();
-                    }
-
-                    @Override
-                    public void onWeatherSuccess() {
-                        weather = localWeather.getWeather();
-                        weatherReady = true;
-                        updateWeatherDetails();
-                    }
-                });
+        localWeather = new LocalWeather(this, "OpenWeatherApiKey");
     }
 
     private void initializeLogic() {
-        Timer timer = new Timer ();
-        TimerTask tenMinTask = new TimerTask () {
+        localWeather.setUseCurrentLocation(true);
+        localWeather.setUpdateCurrentLocation(true);
+        localWeather.lang = Lang.ENGLISH;
+        localWeather.unit = Units.METRIC;
+
+        localWeather.setWeatherCallback(new LocalWeather.WeatherCallback() {
             @Override
-            public void run () {
-                weatherReady = false;
-                localWeather.fetchLocation();
+            public void onSuccess(Weather weather) {
+                updateWeatherDetails(weather);
             }
-        };
-        timer.schedule(tenMinTask, 0, 1000*60*10); //1000*60 = 1min *10 = 10min
+
+            @Override
+            public void onFailure(Throwable exception) {
+                Log.e("Weather fetching Error", exception.getMessage());
+            }
+        });
+
+        localWeather.fetchCurrentLocation(new LocalWeather.CurrentLocationCallback() {
+            @Override
+            public void onSuccess(Location location) {
+                Log.e("Location Success", location.toString());
+                localWeather.fetchCurrentWeatherByLocation(location);
+            }
+
+            @Override
+            public void onFailure(LocationFailedEnum locationFailedEnum) {
+                Log.e("Location fetching Error", locationFailedEnum.toString());
+            }
+        });
     }
 
-    private void updateWeatherDetails() {
-        //extra check but should always be true
-        if (weatherReady) {
+    private void updateWeatherDetails(Weather weather) {
             new OpenWeatherIcons(getApplicationContext(), weather.getIcons()[0], weatherImage);
-            String unit = (localWeather.getUnit() == Units.METRIC) ? "°C" : "°F" ;
-            String speed = (localWeather.getUnit() == Units.METRIC) ? "km/h" : "mi/h" ;
-            weatherTemp.setText(((int) weather.getTemp()) + unit);
+            String unit = (localWeather.unit == Units.METRIC) ? "°C" : "°F" ;
+            String speed = (localWeather.unit == Units.METRIC) ? "km/h" : "mi/h" ;
+            weatherTemp.setText(((int) weather.getTemperature()) + unit);
             weatherInfo.setText("Description: " + weather.getDescriptions()[0]);
             weatherClouds.setText("Clouds: " + ((int) weather.getClouds()));
-            weatherMaxTemp.setText("Max. Temp.: " + ((int) weather.getMaxTemp()) + unit);
-            weatherMinTemp.setText("Min. Temp.: " + ((int) weather.getMinTemp()) + unit);
-            weatherTempKf.setText("Temp Kf.: " + ((int) weather.getTempKf()));
+            weatherMaxTemp.setText("Max. Temp.: " + ((int) weather.getMaxTemperature()) + unit);
+            weatherMinTemp.setText("Min. Temp.: " + ((int) weather.getMinTemperature()) + unit);
+            weatherTempKf.setText("Temp Kf.: " + ((int) weather.getTemperatureKf()));
             locationCountry.setText("Country: " + weather.getCountry());
 
             //real location based: localWeather.getLatitude();
-            locationLat.setText("Latitude: " + weather.getLat());
+            locationLat.setText("Latitude: " + weather.getLatitude());
             //real location based: localWeather.getLongitude();
-            locationLon.setText("Longitude: " + weather.getLon());
+            locationLon.setText("Longitude: " + weather.getLongitude());
 
-            locationGroundLevel.setText("Ground Level: " + weather.getGrndLevel());
+            locationGroundLevel.setText("Ground Level: " + weather.getGroundLevel());
             locationSeaLevel.setText("Sea Level: " + weather.getSeaLevel());
 
             weatherBase.setText("Base: " + weather.getBase());
             weatherWindSpeed.setText("Wind Speed: " + weather.getWindSpeed() + speed);
-            weatherWindDeg.setText("Wind Angle: " + ((int) weather.getWindDeg()) + "°");
+            weatherWindDeg.setText("Wind Angle: " + ((int) weather.getWindAngle()) + "°");
             weatherSunrise.setText("Sunrise: " + weather.getSunrise());
             weatherSunset.setText("Sunset: " + weather.getSunset());
-        }
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM", ConfigurationCompat.getLocales(getResources().getConfiguration()).get(0));
@@ -149,14 +137,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        localWeather.getLocationAccess().onActivityResult(requestCode, resultCode, data);
+        localWeather.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        localWeather.getLocationAccess().onRequestPermissionsResult(requestCode, permissions, grantResults);
+        localWeather.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
 }

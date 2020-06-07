@@ -1,4 +1,4 @@
-package de.interaapps.localweather;
+package de.interaapps.example;
 
 import android.content.Context;
 
